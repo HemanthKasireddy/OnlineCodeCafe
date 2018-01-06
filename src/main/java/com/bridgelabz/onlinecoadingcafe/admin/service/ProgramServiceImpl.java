@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import com.bridgelabz.onlinecoadingcafe.admin.model.Program;
 import com.bridgelabz.onlinecoadingcafe.admin.repository.IOnlineCodeCafe;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 @Service
 public class ProgramServiceImpl implements IProgramService {
@@ -37,29 +36,56 @@ public class ProgramServiceImpl implements IProgramService {
 		
 	}
 	
-	@SuppressWarnings("null")
+	/*@SuppressWarnings("null")
 	public String pythonJavaCompile(File javaFile) throws IOException {
 		Process process = Runtime.getRuntime().exec("python JavaCompile.py "+javaFile);
-		/*BufferedReader stdInput = new BufferedReader(new 
-                InputStreamReader(process.getInputStream()));*/
+		 String errors = null;
+		try( BufferedReader stdError = new BufferedReader(new 
+                InputStreamReader(process.getErrorStream()));) {
+			
+		
+		BufferedReader stdInput = new BufferedReader(new 
+                InputStreamReader(process.getInputStream()));
 
-           BufferedReader stdError = new BufferedReader(new 
-                InputStreamReader(process.getErrorStream()));
+          
        
-           String errors=null;
+          
            // read any errors from the attempted command
            logger.debug("Here is the standard error of the command (if any):\n");
            while ((errors = stdError.readLine()) != null) {
-               logger.error("Errors are : \n",errors);
+               logger.debug("Errors are : \n",errors);
            }
-          /* if(errors.isEmpty()) {
+           if(errors.isEmpty()) {
         	   return "compilation sucess";
-           }*/
+           }
+
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
 		return errors;
+	}*/
+	
+	@SuppressWarnings("null")
+	public String pythonJavaCompile(File javaFile) throws IOException, InterruptedException {
+		ProcessBuilder processBuilder=new ProcessBuilder("python","/home/bridgeit/Project/OnlineCoadingCafe/src/main/resources/python/JavaCompile.py",""+javaFile);
+		processBuilder.redirectErrorStream(true);
+		logger.debug("inside java compile code");
+
+		Process process = processBuilder.start();  
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		String data;
+		while ((data = bufferedReader.readLine()) != null) {
+		    logger.debug(data);
+		}
+		process.waitFor();
+
+		bufferedReader.close();
+		return data;
 	}
 	
 	@Override
-	public String runProgram(Program program) throws IOException {
+	public String runProgram(Program program) throws IOException, InterruptedException {
 		
 		BufferedWriter bufferedWriter = null;
 		FileWriter fileWriter = null;
@@ -71,11 +97,11 @@ public class ProgramServiceImpl implements IProgramService {
 			
 			if(file.createNewFile()) {
 				
-				logger.debug("File is created ");
+				logger.debug("@@@@@@@@@@@File is created ");
 			
 			} else {
 				
-				logger.debug("File is already exist ");
+				logger.debug("@@@@@@@@@@@@@@@@File is already exist ");
 
 			}
 			
@@ -98,12 +124,14 @@ public class ProgramServiceImpl implements IProgramService {
 			bufferedWriter.write(program.getCode());
 			
 			logger.debug(" file write operation completed");
+			
 			String status=pythonJavaCompile(file);
 			if(status!=null) {
 				return status;
 			}
 			String output=pythonJavaRun(file);
 		 return output;
+		
 		} finally {
 
 				if (bufferedWriter != null) {
@@ -120,34 +148,57 @@ public class ProgramServiceImpl implements IProgramService {
 		}
 	}
 
-	private String pythonJavaRun(File javaFile) throws IOException {
+	/*private String pythonJavaRun(File javaFile) throws IOException {
 		Process process = Runtime.getRuntime().exec("python JavaExec.py "+javaFile);
-		BufferedReader stdOutput = new BufferedReader(new 
+		  String output = null;
+		try(BufferedReader stdOutput = new BufferedReader(new 
                 InputStreamReader(process.getInputStream()));
 
            BufferedReader stdError = new BufferedReader(new 
-                InputStreamReader(process.getErrorStream()));
+                InputStreamReader(process.getErrorStream()));) {
        
-           String output=null;
+         
            // read any output from the attempted command
            logger.debug("Here is the standard output of the command (if any):\n");
            while ((output = stdOutput.readLine()) != null) {
                logger.error("output are : \n",output);
            }
-           String errors=null;
+           String errors;
            // read any errors from the attempted command
            logger.debug("Here is the standard error of the command (if any):\n");
            while ((errors = stdError.readLine()) != null) {
-               logger.error("Errors are : \n",errors);
+               logger.debug("Errors are : \n",errors);
            }
-           /*if(!errors.isEmpty()) {
+           if(!errors.isEmpty()) {
         	   return errors;
            }
            if(output.isEmpty()) {
         	   return output;
-           }*/
-           return output+errors;	
+           }
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+           return output;	
 		
+	}*/
+	private String pythonJavaRun(File javaFile) throws IOException, InterruptedException {
+		ProcessBuilder processBuilder=new ProcessBuilder("python","/home/bridgeit/Project/OnlineCoadingCafe/src/main/resources/python/JavaExec.py",""+javaFile);
+		processBuilder.redirectErrorStream(true);
+		logger.debug("inside java run code");
+		Process process = processBuilder.start();  
+
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		String data;
+		String dataT="";
+		while ((data = bufferedReader.readLine()) != null) {
+			logger.debug(dataT=dataT+data);
+		}
+		process.waitFor();
+		logger.debug(dataT);
+
+		bufferedReader.close();
+
+		return dataT;
 	}
 
 }

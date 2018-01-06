@@ -2,26 +2,26 @@ package com.bridgelabz.onlinecoadingcafe.admin.controller;
 
 
 import java.io.IOException;
-import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bridgelabz.onlinecoadingcafe.admin.model.Program;
 import com.bridgelabz.onlinecoadingcafe.admin.service.IProgramService;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
 @RestController
 public class ProgramController {
+	
+	private  Logger logger = LogManager.getLogger(ProgramController.class);	
+
 	@Autowired
 	private IProgramService programService;
 	
@@ -51,10 +51,10 @@ public class ProgramController {
 	
 	}
 	@RequestMapping(value="/runCode/{id}",method=RequestMethod.GET)
-	public String runCode(@PathVariable String id) throws IOException {
+	public String runCode(@PathVariable String id) throws IOException, InterruptedException {
 		Mono<Program> monoProgram = programService.getCode(id);
 		String status = programService.runProgram(monoProgram.block());
-		
+		logger.debug(status);
 		return status;
 	
 	}

@@ -11,6 +11,6 @@ public interface IProgramService {
 	public Mono<Program> sendCode(Program program);
 
 	public Mono<Program> getCode(String id);
-	public String runProgram(Program program) throws IOException;
+	public String runProgram(Program program) throws IOException, InterruptedException;
 	
 }
